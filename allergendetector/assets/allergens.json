@@ -1,0 +1,56 @@
+{
+  "categories": [
+    {
+      "name": "Major Food Allergens",
+      "items": ["Milk", "Eggs", "Peanuts", "Tree Nuts", "Soy", "Wheat", "Fish", "Shellfish", "Sesame"]
+    },
+    {
+      "name": "Gluten & Grains",
+      "items": ["Gluten", "Barley", "Rye", "Oats", "Spelt", "Kamut", "Triticale", "Malt", "Brewer's Yeast"]
+    },
+    {
+      "name": "Dairy & Components",
+      "items": ["Lactose", "Casein", "Whey", "Albumin", "Butter", "Cheese", "Yogurt", "Cream", "Ghee", "Curd"]
+    },
+    {
+      "name": "Nuts & Seeds",
+      "items": ["Almonds", "Walnuts", "Cashews", "Pecans", "Hazelnuts", "Pistachios", "Brazil Nuts", "Macadamia Nuts", "Pine Nuts", "Chestnuts", "Sunflower Seeds", "Pumpkin Seeds", "Chia Seeds", "Flax Seeds", "Hemp Seeds"]
+    },
+    {
+      "name": "Fish & Seafood",
+      "items": ["Salmon", "Tuna", "Cod", "Halibut", "Sardines", "Anchovies", "Shrimp", "Crab", "Lobster", "Crayfish", "Clams", "Mussels", "Oysters", "Scallops", "Squid", "Octopus"]
+    },
+    {
+      "name": "Fruits",
+      "items": ["Strawberries", "Citrus", "Bananas", "Apples", "Peaches", "Kiwi", "Mango", "Avocado", "Melon", "Tomato", "Pineapple", "Papaya"]
+    },
+    {
+      "name": "Vegetables",
+      "items": ["Celery", "Carrots", "Bell Peppers", "Eggplant", "Spinach", "Potato", "Sweet Potato", "Onion", "Garlic", "Mushrooms", "Asparagus", "Artichoke"]
+    },
+    {
+      "name": "Legumes",
+      "items": ["Peanuts", "Lentils", "Chickpeas", "Beans", "Peas", "Green Beans", "Soybeans", "Lupin"]
+    },
+    {
+      "name": "Spices & Herbs",
+      "items": ["Mustard", "Cinnamon", "Vanilla", "Pepper", "Paprika", "Cumin", "Coriander", "Basil", "Oregano", "Thyme", "Rosemary", "Sage", "Mint"]
+    },
+    {
+      "name": "Additives & Preservatives",
+      "items": ["Sulfites", "MSG", "Nitrates", "Nitrites", "Benzoates", "Sorbates", "Food Coloring", "Artificial Sweeteners", "Preservatives"]
+    },
+    {
+      "name": "Other Common Allergens",
+      "items": ["Corn", "Rice", "Chocolate", "Coffee", "Tea", "Honey", "Maple Syrup", "Coconut", "Yeast", "Gelatin", "Vinegar", "Alcohol"]
+    },
+    {
+      "name": "Medications",
+      "items": ["Penicillin", "Aspirin", "Ibuprofen", "Sulfa Drugs", "Antibiotics", "NSAIDs"]
+    },
+    {
+      "name": "Environmental",
+      "items": ["Latex", "Pollen", "Dust Mites", "Mold", "Animal Dander", "Insect Stings"]
+    }
+  ]
+}

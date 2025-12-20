@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'scanner_screen.dart';
+import 'services/allergen_service.dart';
+import 'models/allergen_model.dart';
 
 void main() {
   runApp(const AllergenDetectorApp());
@@ -39,13 +41,10 @@ class _AllergenDetectorAppState extends State<AllergenDetectorApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
-        fontFamily: 'Roboto',
       ),
       home: Scaffold(
         appBar: AppBar(
           title: Text(_appBarTitles[_selectedIndex]),
-          backgroundColor: Colors.blue[700],
-          foregroundColor: Colors.white,
         ),
         body: _screens[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
@@ -61,12 +60,6 @@ class _AllergenDetectorAppState extends State<AllergenDetectorApp> {
           ],
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.blue[700],
-          unselectedItemColor: Colors.grey[600],
-          selectedFontSize: 13,
-          unselectedFontSize: 13,
-          elevation: 8,
         ),
       ),
     );
@@ -81,34 +74,28 @@ class AllergyProfileScreen extends StatefulWidget {
 }
 
 class _AllergyProfileScreenState extends State<AllergyProfileScreen> {
-  final List<String> commonAllergens = [
-    'Milk',
-    'Eggs',
-    'Peanuts',
-    'Tree Nuts',
-    'Soy',
-    'Wheat',
-    'Fish',
-    'Shellfish',
-    'Gluten',
-    'Sesame',
-    'Mustard',
-    'Celery',
-    'Sulfites',
-    'Lupin',
-    'Lactose',
-    'Casein',
-    'Whey',
-    'Albumin',
-  ];
-
   Set<String> selectedAllergies = {};
   final TextEditingController _customAllergyController = TextEditingController();
+  List<AllergenCategory> allergenCategories = [];
+  bool isLoadingAllergens = true;
 
   @override
   void initState() {
     super.initState();
     _loadAllergies();
+    _loadAllergenData();
+  }
+
+  Future<void> _loadAllergenData() async {
+    final service = AllergenService();
+    final allergenData = await service.loadAllergens();
+
+    if (!mounted) return;
+
+    setState(() {
+      allergenCategories = allergenData.categories;
+      isLoadingAllergens = false;
+    });
   }
 
   Future<void> _loadAllergies() async {
@@ -132,7 +119,6 @@ class _AllergyProfileScreenState extends State<AllergyProfileScreen> {
       const SnackBar(
         content: Text('Allergies saved successfully!'),
         duration: Duration(seconds: 2),
-        backgroundColor: Colors.green,
       ),
     );
   }
@@ -154,7 +140,6 @@ class _AllergyProfileScreenState extends State<AllergyProfileScreen> {
         selectedAllergies.add(allergy);
         _customAllergyController.clear();
       });
-      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 
@@ -172,176 +157,118 @@ class _AllergyProfileScreenState extends State<AllergyProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Allergies',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'These will be checked when scanning products:',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-                    selectedAllergies.isEmpty
-                        ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'No allergies selected yet',
-                        style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
-                      ),
-                    )
-                        : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: selectedAllergies.map((allergy) {
-                        return Chip(
-                          label: Text(allergy),
-                          deleteIcon: const Icon(Icons.close, size: 16),
-                          onDeleted: () => _removeAllergy(allergy),
-                          backgroundColor: Colors.blue[50],
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
+            // Selected Allergies
+            const Text(
+              'Your Allergies:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-
-            const SizedBox(height: 20),
-
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Add Custom Allergy',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _customAllergyController,
-                            decoration: InputDecoration(
-                              hintText: 'e.g., Latex, Strawberry, Penicillin',
-                              border: const OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.add_circle),
-                                onPressed: _addCustomAllergy,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            onSubmitted: (_) => _addCustomAllergy(),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: _addCustomAllergy,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                          ),
-                          child: const Text('Add'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 8),
+            selectedAllergies.isEmpty
+                ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'No allergies selected. Add some below.',
+                style: TextStyle(color: Colors.grey),
               ),
+            )
+                : Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: selectedAllergies.map((allergy) {
+                return Chip(
+                  label: Text(allergy),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => _removeAllergy(allergy),
+                );
+              }).toList(),
             ),
+            const SizedBox(height: 24),
 
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Common Allergens',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+            // Custom Allergy Input
+            const Text(
+              'Add Custom Allergy:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _customAllergyController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter an allergy (e.g., Latex)',
+                      border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (_) => _addCustomAllergy(),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tap to select/deselect:',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 3.2,
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _addCustomAllergy,
+                  child: const Text('Add'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Allergens from JSON
+            const Text(
+              'Select Allergens:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text('Tap to select/deselect:'),
+            const SizedBox(height: 12),
+
+            isLoadingAllergens
+                ? const Center(child: CircularProgressIndicator())
+                : Expanded(
+              child: ListView.builder(
+                itemCount: allergenCategories.length,
+                itemBuilder: (context, categoryIndex) {
+                  final category = allergenCategories[categoryIndex];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
                       ),
-                      itemCount: commonAllergens.length,
-                      itemBuilder: (context, index) {
-                        final allergen = commonAllergens[index];
-                        final isSelected = selectedAllergies.contains(allergen);
-                        return Card(
-                          color: isSelected ? Colors.blue.withAlpha(40) : Colors.white,
-                          elevation: isSelected ? 2 : 1,
-                          child: InkWell(
-                            onTap: () => _toggleAllergy(allergen),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: Row(
-                                children: [
-                                  Checkbox(
-                                    value: isSelected,
-                                    onChanged: (_) => _toggleAllergy(allergen),
-                                    activeColor: Colors.blue,
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      allergen,
-                                      style: TextStyle(
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                        color: isSelected ? Colors.blue[800] : Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: category.items.map((allergen) {
+                          final isSelected = selectedAllergies.contains(allergen);
+                          return FilterChip(
+                            label: Text(allergen),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleAllergy(allergen),
+                            backgroundColor: isSelected
+                                ? Colors.blue.withAlpha(40)
+                                : null,
+                            selectedColor: Colors.blue[100],
+                            checkmarkColor: Colors.blue[800],
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: _saveAllergies,
-        icon: const Icon(Icons.save),
-        label: const Text('Save Allergies'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        tooltip: 'Save Allergies',
+        child: const Icon(Icons.save),
       ),
     );
   }
